@@ -12,6 +12,14 @@ const Repairs = db.define('repairs', {
     type: DataTypes.DATE,
     allowNull: false,
   },
+  motorsNumber: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
   status: {
     type: DataTypes.STRING,
     allowNull: false,

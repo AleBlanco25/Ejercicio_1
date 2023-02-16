@@ -1,142 +1,65 @@
-const { Sequelize, json } = require('sequelize');
 const Users = require('../models/users.models');
+const catchAsync = require('../utils/catchAsync');
 
-exports.findUsers = async (req, res) => {
-  try {
-    const users = await Users.findAll({
-      where: {
-        status: 'available',
-      },
-    });
-    res.json({
-      status: 'success',
-      message: 'Users found successfuly',
-      users,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 'fail',
-      message: 'Internal Server error',
-    });
-  }
-};
-
-exports.findUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    const user = await Users.findOne({
-      where: {
-        id,
-        status: 'available',
-      },
-    });
-    if (!user) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'User not found',
-      });
-    }
-    res.json({
+exports.findUsers = catchAsync(async (req, res, next) => {
+  const users = await Users.findAll({
+    where: {
       status: 'available',
-      message: 'User found successfuly',
-      user,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 'fail',
-      message: 'Internal Server error',
-    });
-  }
-};
+    },
+  });
 
-exports.createUser = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
+  res.json({
+    status: 'success',
+    message: 'Users found successfuly',
+    users,
+  });
+});
 
-    const newUser = await Users.create({
-      name,
-      email: email.toLowerCase(),
-      password,
-      role,
-    });
+exports.findUser = catchAsync(async (req, res, next) => {
+  const { user } = req;
+  res.json({
+    status: 'available',
+    message: 'User found successfuly',
+    user,
+  });
+});
 
-    res.status(201).json({
-      status: 'available',
-      message: 'User created successfuly',
-      newUser,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 'fail',
-      message: 'Internal Server error',
-    });
-  }
-};
+exports.createUser = catchAsync(async (req, res, next) => {
+  const { name, email, password } = req.body;
 
-exports.updateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { name, email } = req.body;
+  const newUser = await Users.create({
+    name,
+    email: email.toLowerCase(),
+    password,
+  });
 
-    const user = await Users.findOne({
-      where: {
-        status: 'available',
-        id,
-      },
-    });
-    if (!user) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'User not found',
-      });
-    }
-    const updatedUser = await user.update({ name, email });
+  res.status(201).json({
+    status: 'available',
+    message: 'User created successfuly',
+    newUser,
+  });
+});
 
-    res.json({
-      status: 'available',
-      message: 'User updated successfuly',
-      updatedUser,
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 'fail',
-      message: 'Internal Server error',
-    });
-  }
-};
+exports.updateUser = catchAsync(async (req, res, next) => {
+  const { user } = req;
+  const { name, email } = req.body;
 
-exports.deleteUser = async (req, res) => {
-  try {
-    const { id } = req.params;
+  const updatedUser = await user.update({ name, email });
 
-    const user = await Users.findOne({
-      where: {
-        status: 'available',
-        id,
-      },
-    });
-    if (!user) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'User not found',
-      });
-    }
-    await user.update({ status: 'disable' });
+  res.json({
+    status: 'available',
+    message: 'User updated successfuly',
+    updatedUser,
+  });
+});
 
-    res.json({
-      status: 'available',
-      message: 'User deleted successfuly',
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: 'fail',
-      message: 'Internal Server error',
-    });
-  }
-};
+exports.deleteUser = catchAsync(async (req, res, next) => {
+  const { user } = req;
+
+  await user.update({ status: 'disable' });
+
+  res.json({
+    status: 'available',
+    message: 'User deleted successfuly',
+  });
+});
