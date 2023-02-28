@@ -1,12 +1,13 @@
-const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
+const { db } = require('../database/db');
+const express = require('express');
+const AppError = require('../utils/appError');
+const globalErrorHandler = require('../controllers/error.controller');
 const { usersRouter } = require('../routes/users.routes');
 const { repairsRouter } = require('../routes/repairs.routes');
-const { db } = require('../database/db');
-const globalErrorHandler = require('../controllers/error.controller');
-const AppError = require('../utils/appError');
 const { initModel } = require('./init.model');
+const { authRouter } = require('../routes/auth.routes');
 
 class Server {
   constructor() {
@@ -16,6 +17,7 @@ class Server {
     this.paths = {
       users: '/api/v1/users',
       repairs: '/api/v1/repairs',
+      auth: '/api/v1/auth',
     };
 
     this.database();
@@ -37,6 +39,7 @@ class Server {
   routes() {
     this.app.use(this.paths.users, usersRouter);
     this.app.use(this.paths.repairs, repairsRouter);
+    this.app.use(this.paths.auth, authRouter);
 
     this.app.all('*', (req, res, next) => {
       return next(

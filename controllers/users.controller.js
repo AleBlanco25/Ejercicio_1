@@ -1,4 +1,6 @@
 const Users = require('../models/users.models');
+const AppError = require('../utils/appError');
+const bcrypt = require('bcryptjs');
 const catchAsync = require('../utils/catchAsync');
 
 exports.findUsers = catchAsync(async (req, res, next) => {
@@ -24,22 +26,6 @@ exports.findUser = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createUser = catchAsync(async (req, res, next) => {
-  const { name, email, password } = req.body;
-
-  const newUser = await Users.create({
-    name,
-    email: email.toLowerCase(),
-    password,
-  });
-
-  res.status(201).json({
-    status: 'available',
-    message: 'User created successfuly',
-    newUser,
-  });
-});
-
 exports.updateUser = catchAsync(async (req, res, next) => {
   const { user } = req;
   const { name, email } = req.body;
@@ -50,6 +36,28 @@ exports.updateUser = catchAsync(async (req, res, next) => {
     status: 'available',
     message: 'User updated successfuly',
     updatedUser,
+  });
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  const { user } = req;
+  const { currentPassword, newPassword } = req.body;
+
+  if (!(await bcrypt.compare(currentPassword, user.password))) {
+    return next(new AppError('Incorect email or password', 401));
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const encripterPassword = await bcrypt.hash(newPassword, salt);
+
+  await user.update({
+    password: encripterPassword,
+    passwordChangeAt: new Date(),
+  });
+
+  res.status(200).json({
+    status: 'success',
+    message: 'Password updated successfuly',
   });
 });
 

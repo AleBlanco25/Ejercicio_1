@@ -3,44 +3,40 @@ const { check } = require('express-validator');
 const {
   findUsers,
   findUser,
-  createUser,
   updateUser,
   deleteUser,
+  updatePassword,
 } = require('../controllers/users.controller');
+const {
+  protect,
+  protectAccountOwner,
+} = require('../middlewares/auth.middleware');
 const { validUserById } = require('../middlewares/users.middlewares');
 const { validateFields } = require('../middlewares/validateFields.middleware');
+const { validations } = require('../middlewares/validations.middleware');
 
 const router = Router();
 
+router.use(protect);
 router.get('', findUsers);
 router.get('/:id', validUserById, findUser);
-router.post(
-  '',
-  [
-    check('name', 'name is required').not().isEmpty(),
-    check('email', 'email is required').not().isEmpty(),
-    check('email', 'email must have a correct format').isEmail(),
-    check('password', 'password is required').not().isEmpty(),
-    check('password', 'password must have between 3 a 10 characters').isLength({
-      min: 3,
-      max: 10,
-    }),
-    validateFields,
-  ],
-  createUser
-);
 router.patch(
   '/:id',
-  [
-    check('name', 'name is required').not().isEmpty(),
-    check('email', 'email is required').not().isEmpty(),
-    check('email', 'email must have a correct format').isEmail(),
-    validateFields,
-  ],
+  validateFields,
   validUserById,
+  validations,
+  protectAccountOwner,
   updateUser
 );
-router.delete('/:id', validUserById, deleteUser);
+router.patch(
+  '/password/:id',
+  validateFields,
+  validUserById,
+  validations,
+  protectAccountOwner,
+  updatePassword
+);
+router.delete('/:id', validUserById, protectAccountOwner, deleteUser);
 
 module.exports = {
   usersRouter: router,
